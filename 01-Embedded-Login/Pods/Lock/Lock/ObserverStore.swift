@@ -24,17 +24,19 @@ import Foundation
 import Auth0
 
 struct ObserverStore: Dispatcher {
-    var onAuth: (Credentials) -> () = { _ in }
-    var onFailure: (Error) -> () = { _ in }
-    var onCancel: () -> () = {  }
-    var onSignUp: (String, [String: Any]) -> () = { _ in }
-    var onForgotPassword: (String) -> () = { _ in }
+    var onAuth: (Credentials) -> Void = { _ in }
+    var onFailure: (Error) -> Void = { _ in }
+    var onCancel: () -> Void = {  }
+    var onSignUp: (String, [String: Any]) -> Void = { _ in }
+    var onForgotPassword: (String) -> Void = { _ in }
+    var onPasswordless: (String) -> Void = { _ in }
+
     var options: Options = LockOptions()
 
     weak var controller: UIViewController?
 
     func dispatch(result: Result) {
-        let closure: () -> ()
+        let closure: () -> Void
         switch result {
         case .auth(let credentials):
             if self.options.autoClose {
@@ -58,12 +60,14 @@ struct ObserverStore: Dispatcher {
             } else {
                 closure = { self.onForgotPassword(email) }
             }
+        case .passwordless(let identifier):
+            closure = { self.onPasswordless(identifier) }
         }
 
         Queue.main.async(closure)
     }
 
-    private func dismiss(from controller: UIViewController?, completion: @escaping () -> ()) -> () -> () {
+    private func dismiss(from controller: UIViewController?, completion: @escaping () -> Void) -> () -> Void {
         guard let controller = controller else { return completion }
         return { controller.dismiss(animated: true, completion: completion) }
     }
@@ -75,6 +79,7 @@ enum Result {
     case cancel
     case signUp(String, [String: Any])
     case forgotPassword(String)
+    case passwordless(String)
 }
 
 protocol Dispatcher {

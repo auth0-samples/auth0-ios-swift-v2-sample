@@ -26,7 +26,7 @@ import SimpleKeychain
 import Auth0
 
 enum SessionManagerError: Error {
-    case noIdToken
+    case noAccessToken
     case noRefreshToken
 }
 
@@ -37,20 +37,20 @@ class SessionManager {
 
     private init () { }
 
-    func storeTokens(_ idToken: String, refreshToken: String? = nil) {
-        self.keychain.setString(idToken, forKey: "id_token")
+    func storeTokens(_ accessToken: String, refreshToken: String? = nil) {
+        self.keychain.setString(accessToken, forKey: "access_token")
         if let refreshToken = refreshToken {
             self.keychain.setString(refreshToken, forKey: "refresh_token")
         }
     }
 
     func retrieveProfile(_ callback: @escaping (Error?) -> ()) {
-        guard let idToken = self.keychain.string(forKey: "id_token") else {
-            return callback(SessionManagerError.noIdToken)
+        guard let accessToken = self.keychain.string(forKey: "access_token") else {
+            return callback(SessionManagerError.noAccessToken)
         }
         Auth0
             .authentication()
-            .tokenInfo(token: idToken)
+            .userInfo(token: accessToken)
             .start { result in
                 switch(result) {
                 case .success(let profile):
@@ -68,14 +68,12 @@ class SessionManager {
         }
         Auth0
             .authentication()
-            .delegation(withParameters: ["refresh_token": refreshToken,
-                                         "scope": "openid email",
-                                         "api_type": "app"])
+            .renew(withRefreshToken: refreshToken, scope: "openid profile offline_access")
             .start { result in
                 switch(result) {
                 case .success(let credentials):
-                    guard let idToken = credentials["id_token"] as? String else { return }
-                    self.storeTokens(idToken)
+                    guard let accessToken = credentials.accessToken else { return }
+                    self.storeTokens(accessToken)
                     self.retrieveProfile(callback)
                 case .failure(let error):
                     callback(error)

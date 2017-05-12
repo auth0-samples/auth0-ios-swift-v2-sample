@@ -48,6 +48,9 @@ public protocol OptionBuildable: Options {
         /// Scope used for authentication. By default is `openid`.
     var scope: String { get set }
 
+        /// Allows you to specify provider scopes for oauth2/social connections with a comma separated list (values depend on the social IdP). By default is empty.
+    var connectionScope: [String: String] { get set }
+
         /// Authentication parameters sent with every authentication requests. By default is an empty dictionary.
     var parameters: [String: Any] { get set }
 
@@ -84,14 +87,27 @@ public protocol OptionBuildable: Options {
 
         /// Specify the intended resource server of the token. By default no audience is specified.
     var audience: String? { get set }
+
+        /// Specify the passwordless method, send a passcode or magic link. By default is .code
+    var passwordlessMethod: PasswordlessMethod { get set }
 }
 
-internal extension OptionBuildable {
-    func validate() -> UnrecoverableError? {
+extension OptionBuildable {
+
+    func validate(classic: Bool = true) -> UnrecoverableError? {
+        return classic ? validateClassic() : validatePasswordless()
+    }
+
+    func validateClassic() -> UnrecoverableError? {
         guard !self.allow.isEmpty else { return UnrecoverableError.invalidOptions(cause: "Must allow at least one database mode") }
         guard !self.usernameStyle.isEmpty else { return UnrecoverableError.invalidOptions(cause: "Must specify at least one username style") }
         guard self.allow.contains(.Login) || self.closable || self.autoClose else { return UnrecoverableError.invalidOptions(cause: "Must enable autoclose or enable closable") }
         guard self.oidcConformant || self.audience == nil else { return UnrecoverableError.invalidOptions(cause: "Must set OIDC-Conformant flag in Lock to use audience option") }
+        return nil
+    }
+
+    func validatePasswordless() -> UnrecoverableError? {
+        guard self.audience == nil else { return UnrecoverableError.invalidOptions(cause: "Audience option not available in Lock Passwordless") }
         return nil
     }
 }

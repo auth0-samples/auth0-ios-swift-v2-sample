@@ -33,7 +33,7 @@ struct CDNLoaderInteractor: RemoteConnectionLoader, Loggable {
         self.url = URL(string: "client/\(clientId).js", relativeTo: cdnURL(from: baseURL))!
     }
 
-    func load(_ callback: @escaping (UnrecoverableError?, Connections?) -> ()) {
+    func load(_ callback: @escaping (UnrecoverableError?, Connections?) -> Void) {
         self.logger.info("Loading client info from \(self.url)")
         let task = URLSession.shared.dataTask(with: self.url, completionHandler: { (data, response, error) in
             guard error?._code != NSURLErrorTimedOut else { return callback(.connectionTimeout, nil) }
@@ -77,7 +77,7 @@ struct CDNLoaderInteractor: RemoteConnectionLoader, Loggable {
             do {
                 var connections = OfflineConnections()
                 let json = try JSONSerialization.jsonObject(with: jsonp.data(using: String.Encoding.utf8)!, options: []) as? JSONObject
-                self.logger.debug("Client configuration is \(json)")
+                self.logger.debug("Client configuration is \(json.verbatim())")
                 let info = ClientInfo(json: json)
                 if let auth0 = info.auth0 {
                     auth0.connections.forEach { connection in
@@ -95,6 +95,15 @@ struct CDNLoaderInteractor: RemoteConnectionLoader, Loggable {
                 }
                 info.oauth2.forEach { strategy in
                     strategy.connections.forEach { connections.social(name: $0.name, style: AuthStyle.style(forStrategy: strategy.name, connectionName: $0.name)) }
+                }
+                info.passwordless.forEach { strategy in
+                    strategy.connections.forEach {
+                        if strategy.name == "email" {
+                            connections.email(name: $0.name)
+                        } else {
+                            connections.sms(name: $0.name)
+                        }
+                    }
                 }
 
                 guard !connections.isEmpty else { return callback(.clientWithNoConnections, connections) }
@@ -124,6 +133,8 @@ private struct ClientInfo {
     var oauth2: [StrategyInfo] { return strategies.filter { $0.name != "auth0" && !passwordlessStrategyNames.contains($0.name) && !enterpriseStrategyNames.contains($0.name) } }
 
     var enterprise: [StrategyInfo] { return strategies.filter { $0.name != "auth0" && !passwordlessStrategyNames.contains($0.name) && enterpriseStrategyNames.contains($0.name) } }
+
+    var passwordless: [StrategyInfo] { return strategies.filter { passwordlessStrategyNames.contains($0.name) } }
 
     let passwordlessStrategyNames = [
         "email",

@@ -26,6 +26,7 @@ public protocol Connections {
     var database: DatabaseConnection? { get }
     var oauth2: [OAuth2Connection] { get }
     var enterprise: [EnterpriseConnection] {get}
+    var passwordless: [PasswordlessConnection] { get }
 
     var isEmpty: Bool { get }
 
@@ -72,5 +73,15 @@ public struct EnterpriseConnection: OAuth2Connection {
         self.name = name
         self.domains = domains
         self.style = style ?? AuthStyle(name: name)
+    }
+}
+
+public struct PasswordlessConnection {
+    public let name: String
+    public let strategy: String
+
+    public init(name: String, strategy: String) {
+        self.name = name
+        self.strategy = strategy
     }
 }

@@ -28,6 +28,7 @@ struct OfflineConnections: ConnectionBuildable {
     var database: DatabaseConnection? { return self.databases.first }
     private (set) var oauth2: [OAuth2Connection] = []
     private (set) var enterprise: [EnterpriseConnection] = []
+    private (set) var passwordless: [PasswordlessConnection] = []
 
     mutating func database(name: String, requiresUsername: Bool, usernameValidator: UsernameValidator = UsernameValidator(), passwordValidator: PasswordPolicyValidator) {
         self.databases.append(DatabaseConnection(name: name, requiresUsername: requiresUsername, usernameValidator: usernameValidator, passwordValidator: passwordValidator))
@@ -52,8 +53,18 @@ struct OfflineConnections: ConnectionBuildable {
         self.enterprise.append(enterprise)
     }
 
+    mutating func sms(name: String) {
+        let passwordless = PasswordlessConnection(name: name, strategy: "sms")
+        self.passwordless.append(passwordless)
+    }
+
+    mutating func email(name: String) {
+        let passwordless = PasswordlessConnection(name: name, strategy: "email")
+        self.passwordless.append(passwordless)
+    }
+
     var isEmpty: Bool {
-        return self.database == nil && self.oauth2.isEmpty && self.enterprise.isEmpty
+        return self.database == nil && self.oauth2.isEmpty && self.enterprise.isEmpty && self.passwordless.isEmpty
     }
 
     func select(byNames names: [String]) -> OfflineConnections {
@@ -61,6 +72,7 @@ struct OfflineConnections: ConnectionBuildable {
         connections.databases = self.databases.filter { isWhitelisted(connectionName: $0.name, inList: names) }
         connections.oauth2 = self.oauth2.filter { isWhitelisted(connectionName: $0.name, inList: names) }
         connections.enterprise = self.enterprise.filter { isWhitelisted(connectionName: $0.name, inList: names) }
+        connections.passwordless = self.passwordless.filter { isWhitelisted(connectionName: $0.name, inList: names) }
         return connections
     }
 }

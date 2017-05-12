@@ -23,22 +23,40 @@
 import Foundation
 import Auth0
 
-struct Auth0OAuth2Interactor: OAuth2Authenticatable {
+struct Auth0OAuth2Interactor: OAuth2Authenticatable, Loggable {
 
-    let webAuth: Auth0.WebAuth
+    let authentication: Authentication
     let dispatcher: Dispatcher
     let options: Options
+    let nativeHandlers: [String: AuthProvider]
 
-    func login(_ connection: String, callback: @escaping (OAuth2AuthenticatableError?) -> ()) {
+    func login(_ connection: String, loginHint: String?, callback: @escaping (OAuth2AuthenticatableError?) -> Void) {
+        if let nativeHandler = self.nativeHandlers[connection], type(of: nativeHandler).isAvailable() {
+            self.nativeAuth(withConnection: connection, nativeAuth: nativeHandler, callback: callback)
+        } else {
+            self.webAuth(withConnection: connection, loginHint: loginHint, callback: callback)
+        }
+    }
+
+    private func webAuth(withConnection connection: String, loginHint: String?, callback: @escaping (OAuth2AuthenticatableError?) -> Void) {
+
         var parameters: [String: String] = [:]
         self.options.parameters.forEach { parameters[$0] = "\($1)" }
-        var auth = self.webAuth
-            .connection(connection)
+        parameters["login_hint"] = loginHint
+
+        var auth = authentication
+            .webAuth(withConnection: connection)
             .scope(self.options.scope)
             .parameters(parameters)
 
+        auth = auth.logging(enabled: self.options.logHttpRequest)
+
         if let audience = self.options.audience {
             auth = auth.audience(audience)
+        }
+
+        if let connectionScope = self.options.connectionScope[connection] {
+            auth = auth.connectionScope(connectionScope)
         }
 
         auth
@@ -53,6 +71,23 @@ struct Auth0OAuth2Interactor: OAuth2Authenticatable {
                 case .failure:
                     callback(.couldNotAuthenticate)
                     self.dispatcher.dispatch(result: .error(OAuth2AuthenticatableError.couldNotAuthenticate))
+                }
+        }
+    }
+
+    private func nativeAuth(withConnection connection: String, nativeAuth: AuthProvider, callback: @escaping (OAuth2AuthenticatableError?) -> Void) {
+
+        nativeAuth.login(withConnection: connection, scope: self.options.scope, parameters: self.options.parameters)
+            .start { result in
+                Queue.main.async {
+                    switch result {
+                    case .success(let credentials):
+                        callback(nil)
+                        self.dispatcher.dispatch(result: .auth(credentials))
+                    case .failure(let error):
+                        callback(.couldNotAuthenticate)
+                        self.dispatcher.dispatch(result: .error(error))
+                    }
                 }
             }
     }

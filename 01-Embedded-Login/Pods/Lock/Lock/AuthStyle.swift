@@ -150,7 +150,7 @@ public extension AuthStyle {
     public static var Evernote: AuthStyle {
         return AuthStyle(
                 name: "EVERNOTE".i18n(key: "com.auth0.lock.strategy.localized.evernote", comment: "Evernote"),
-                color: .a0_fromRGB("#82B137"),
+                color: .a0_fromRGB("#2dbe60"),
                 withImage: LazyImage(name: "ic_auth_evernote", bundle: bundleForLock())
         )
     }
@@ -159,7 +159,7 @@ public extension AuthStyle {
     public static var EvernoteSandbox: AuthStyle {
         return AuthStyle(
                 name: "EVERNOTE (SANDBOX)".i18n(key: "com.auth0.lock.strategy.localized.evernote_sandbox", comment: "EvernoteSandbox"),
-                color: .a0_fromRGB("#82B137"),
+                color: .a0_fromRGB("#2dbe60"),
                 withImage: LazyImage(name: "ic_auth_evernote", bundle: bundleForLock())
         )
     }
@@ -245,6 +245,15 @@ public extension AuthStyle {
         )
     }
 
+    /// Paypal style for AuthButton
+    public static var PaypalSandbox: AuthStyle {
+        return AuthStyle(
+            name: "PAYPAL (SANDBOX)".i18n(key: "com.auth0.lock.strategy.localized.paypal_sandbox", comment: "PaypalSandbox"),
+            color: .a0_fromRGB("#009cde"),
+            withImage: LazyImage(name: "ic_auth_paypal", bundle: bundleForLock())
+        )
+    }
+    
     /// Planning Center style for AuthButton
     public static var PlanningCenter: AuthStyle {
         return AuthStyle(
@@ -452,6 +461,8 @@ extension AuthStyle {
             return .Miicard
         case "paypal":
             return .Paypal
+        case "paypal-sandbox":
+            return .PaypalSandbox
         case "planningcenter":
             return .PlanningCenter
         case "renren":

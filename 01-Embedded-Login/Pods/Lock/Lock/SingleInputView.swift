@@ -58,13 +58,13 @@ class SingleInputView: UIView, Form {
         }
     }
 
-    var onValueChange: (InputField) -> () = { _ in } {
+    var onValueChange: (InputField) -> Void = { _ in } {
         didSet {
             self.inputField.onTextChange = self.onValueChange
         }
     }
 
-    var onReturn: (InputField) -> () {
+    var onReturn: (InputField) -> Void {
         get {
             return self.inputField.onReturn
         }
@@ -101,15 +101,16 @@ class SingleInputView: UIView, Form {
     private func layoutForm() {
         self.addSubview(self.stackView)
 
-        constraintEqual(anchor: self.stackView.leftAnchor, toAnchor: self.leftAnchor)
+        constraintEqual(anchor: self.stackView.leftAnchor, toAnchor: self.leftAnchor, constant: 20)
         constraintEqual(anchor: self.stackView.topAnchor, toAnchor: self.topAnchor)
-        constraintEqual(anchor: self.stackView.rightAnchor, toAnchor: self.rightAnchor)
+        constraintEqual(anchor: self.stackView.rightAnchor, toAnchor: self.rightAnchor, constant: -20)
         constraintEqual(anchor: self.stackView.bottomAnchor, toAnchor: self.bottomAnchor)
         self.stackView.translatesAutoresizingMaskIntoConstraints = false
 
         self.stackView.alignment = .fill
         self.stackView.axis = .vertical
-        self.stackView.distribution = .equalCentering
+        self.stackView.distribution = .equalSpacing
+        self.stackView.spacing = 16
 
         titleView.textAlignment = .center
         titleView.font = regularSystemFont(size: 26)
@@ -119,9 +120,5 @@ class SingleInputView: UIView, Form {
         messageView.font = regularSystemFont(size: 15)
         inputField.type = self.type
         inputField.returnKey = self.returnKey
-    }
-
-    override var intrinsicContentSize: CGSize {
-        return CGSize(width: UIViewNoIntrinsicMetric, height: 244)
     }
 }

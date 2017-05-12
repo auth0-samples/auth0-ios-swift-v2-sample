@@ -34,7 +34,12 @@ class EnterpriseDomainPresenter: Presentable, Loggable {
         self.options = options
     }
 
-    var messagePresenter: MessagePresenter?
+    var messagePresenter: MessagePresenter? {
+        didSet {
+            self.authPresenter?.messagePresenter = messagePresenter
+        }
+    }
+
     var navigator: Navigable?
 
     var view: View {
@@ -67,7 +72,7 @@ class EnterpriseDomainPresenter: Presentable, Loggable {
             }
 
             self.messagePresenter?.hideCurrent()
-            self.logger.info("Enterprise connection started: \(self.interactor.email), \(self.interactor.connection)")
+            self.logger.info("Enterprise connection started: \(self.interactor.email.verbatim()), \(self.interactor.connection.verbatim())")
             let interactor = self.interactor
             button.inProgress = true
             interactor.login { error in

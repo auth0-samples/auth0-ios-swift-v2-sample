@@ -22,8 +22,16 @@
 
 import Foundation
 
-@objc protocol Form {
-    var onValueChange: (InputField) -> () { get set }
-    var onReturn: (InputField) -> () { get set }
+protocol Form: class {
+    var onValueChange: (InputField) -> Void { get set }
+    var onReturn: (InputField) -> Void { get set }
     func needsToUpdateState()
+    var onCountryChange: (CountryCode) -> Void { get set }
+}
+
+extension Form {
+    var onCountryChange: (CountryCode) -> Void {
+        get { return self.onCountryChange }
+        set { self.onCountryChange = newValue }
+    }
 }

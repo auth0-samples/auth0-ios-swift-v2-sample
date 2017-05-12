@@ -33,6 +33,7 @@ public protocol Options {
     var logHttpRequest: Bool { get }
 
     var scope: String { get }
+    var connectionScope: [String: String] { get }
     var parameters: [String: Any] { get }
     var allow: DatabaseMode { get }
     var autoClose: Bool { get }
@@ -46,4 +47,6 @@ public protocol Options {
 
     var oidcConformant: Bool { get }
     var audience: String? { get }
+
+    var passwordlessMethod: PasswordlessMethod { get }
 }

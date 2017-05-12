@@ -32,7 +32,12 @@ class DatabasePresenter: Presentable, Loggable {
     var creator: DatabaseUserCreator
     var navigator: Navigable
 
-    var messagePresenter: MessagePresenter?
+    var messagePresenter: MessagePresenter? {
+        didSet {
+            self.authPresenter?.messagePresenter = self.messagePresenter
+        }
+    }
+
     var authPresenter: AuthPresenter?
     var enterpriseInteractor: EnterpriseDomainInteractor?
 
@@ -85,7 +90,7 @@ class DatabasePresenter: Presentable, Loggable {
 
     private func showLogin(inView view: DatabaseView, identifier: String?) {
         self.messagePresenter?.hideCurrent()
-        let authCollectionView = self.authPresenter?.newViewToEmbed(withInsets: UIEdgeInsets(top: 0, left: 18, bottom: 0, right: 18), isLogin: true)
+        let authCollectionView = self.authPresenter?.newViewToEmbed(withInsets: UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20), isLogin: true)
         let style = self.database.requiresUsername ? self.options.usernameStyle : [.Email]
         view.showLogin(withIdentifierStyle: style, identifier: identifier, authCollectionView: authCollectionView)
         self.currentScreen = .login
@@ -94,10 +99,10 @@ class DatabasePresenter: Presentable, Loggable {
 
         let action = { [weak form] (button: PrimaryButton) in
             self.messagePresenter?.hideCurrent()
-            self.logger.info("Perform login for email: \(self.authenticator.email)")
+            self.logger.info("Perform login for email: \(self.authenticator.email.verbatim())")
             button.inProgress = true
 
-            let errorHandler: (LocalizableError?) -> () = { error in
+            let errorHandler: (LocalizableError?) -> Void = { error in
                 Queue.main.async {
                     button.inProgress = false
                     guard let error = error else {
@@ -145,7 +150,7 @@ class DatabasePresenter: Presentable, Loggable {
 
     private func showSignup(inView view: DatabaseView, username: String?, email: String?) {
         self.messagePresenter?.hideCurrent()
-        let authCollectionView = self.authPresenter?.newViewToEmbed(withInsets: UIEdgeInsets(top: 0, left: 18, bottom: 0, right: 18), isLogin: false)
+        let authCollectionView = self.authPresenter?.newViewToEmbed(withInsets: UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 20), isLogin: false)
         let interactor = self.authenticator as? DatabaseInteractor
         let passwordPolicyValidator = interactor?.passwordValidator as? PasswordPolicyValidator
         self.currentScreen = .signup
@@ -155,7 +160,7 @@ class DatabasePresenter: Presentable, Loggable {
         view.form?.onValueChange = self.handleInput
         let action = { [weak form] (button: PrimaryButton) in
             self.messagePresenter?.hideCurrent()
-            self.logger.info("perform sign up for email \(self.creator.email)")
+            self.logger.info("perform sign up for email \(self.creator.email.verbatim())")
             let interactor = self.creator
             button.inProgress = true
             interactor.create { createError, loginError in
@@ -206,7 +211,7 @@ class DatabasePresenter: Presentable, Loggable {
     private func handleInput(_ input: InputField) {
         self.messagePresenter?.hideCurrent()
 
-        self.logger.verbose("new value: \(input.text) for type: \(input.type)")
+        self.logger.verbose("new value: \(input.text.verbatim()) for type: \(input.type)")
         var updateHRD: Bool = false
 
         // FIXME: enum mapping outlived its usefulness
@@ -249,10 +254,9 @@ class DatabasePresenter: Presentable, Loggable {
             input.showError()
         }
     }
-
 }
 
-private func safariBuilder(forURL url: URL, navigator: Navigable) -> (UIAlertAction) -> () {
+private func safariBuilder(forURL url: URL, navigator: Navigable) -> (UIAlertAction) -> Void {
     return { _ in
         let safari = SFSafariViewController(url: url)
         navigator.present(safari)

@@ -33,7 +33,7 @@ class EnterpriseDomainView: UIView, View {
 
     init(email: String?, authCollectionView: AuthCollectionView? = nil) {
         let primaryButton = PrimaryButton()
-        let domainView = EnterpriseSingleInputView()
+        let domainView = SingleInputView()
         let container = UIStackView()
         let ssoBar = InfoBarView.ssoInfoBar
 
@@ -91,41 +91,6 @@ class EnterpriseDomainView: UIView, View {
 
     }
 
-    init(authButton: AuthButton, authCollectionView: AuthCollectionView? = nil) {
-        let container = UIStackView()
-        self.container = container
-
-        super.init(frame: CGRect.zero)
-
-        self.addSubview(container)
-        self.authButton = authButton
-
-        container.alignment = .fill
-        container.axis = .vertical
-        container.distribution = .equalSpacing
-        container.spacing = 5
-
-        container.addArrangedSubview(strutView(withHeight: 25))
-        if let authCollectionView = authCollectionView {
-            self.authCollectionView = authCollectionView
-            container.addArrangedSubview(authCollectionView)
-            let label = UILabel()
-            label.text = "or".i18n(key: "com.auth0.lock.database.separator", comment: "Social separator")
-            label.font = mediumSystemFont(size: 13.75)
-            label.textColor = UIColor ( red: 0.0, green: 0.0, blue: 0.0, alpha: 0.54 )
-            label.textAlignment = .center
-            container.addArrangedSubview(label)
-        }
-        container.addArrangedSubview(authButton)
-        container.addArrangedSubview(strutView())
-
-        constraintEqual(anchor: container.topAnchor, toAnchor: self.topAnchor)
-        constraintEqual(anchor: container.leftAnchor, toAnchor: self.leftAnchor, constant: 20)
-        constraintEqual(anchor: container.rightAnchor, toAnchor: self.rightAnchor, constant: -20)
-        constraintEqual(anchor: container.bottomAnchor, toAnchor: self.bottomAnchor)
-        container.translatesAutoresizingMaskIntoConstraints = false
-    }
-
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -134,18 +99,4 @@ class EnterpriseDomainView: UIView, View {
         self.primaryButton?.apply(style: style)
     }
 
-}
-
-private func strutView(withHeight height: CGFloat = 50) -> UIView {
-    let view = UIView()
-    view.translatesAutoresizingMaskIntoConstraints = false
-    dimension(dimension: view.heightAnchor, withValue: height)
-    return view
-}
-
-class EnterpriseSingleInputView: SingleInputView {
-
-    public override var intrinsicContentSize: CGSize {
-        return CGSize(width: UIViewNoIntrinsicMetric, height: 50)
-    }
 }

@@ -22,7 +22,6 @@
 // THE SOFTWARE.
 
 import UIKit
-import Lock
 import Auth0
 import SimpleKeychain
 
@@ -43,23 +42,24 @@ class HomeViewController: UIViewController {
     // MARK: - Private
 
     fileprivate func showLock() {
-        Lock
-            .classic()
-            .withOptions {
-                $0.scope = "openid email offline_access"
-                $0.parameters = ["device":"UNIQUE_ID"]
-            }
-            .onAuth { credentials in
-                guard let idToken = credentials.idToken, let refreshToken = credentials.refreshToken else { return }
-                SessionManager.shared.storeTokens(idToken, refreshToken: refreshToken)
-                SessionManager.shared.retrieveProfile { error in
-                    DispatchQueue.main.async {
-                        self.performSegue(withIdentifier: "ShowProfileNonAnimated", sender: nil)
+        Auth0
+            .webAuth()
+            .scope("openid profile offline_access")
+            .start {
+                switch $0 {
+                case .failure(let error):
+                    // Handle the error
+                    print("Error: \(error)")
+                case .success(let credentials):
+                    guard let accessToken = credentials.accessToken, let refreshToken = credentials.refreshToken else { return }
+                    SessionManager.shared.storeTokens(accessToken, refreshToken: refreshToken)
+                    SessionManager.shared.retrieveProfile { error in
+                        DispatchQueue.main.async {
+                            self.performSegue(withIdentifier: "ShowProfileNonAnimated", sender: nil)
+                        }
                     }
                 }
-
-            }
-            .present(from: self)
+        }
     }
 
     fileprivate func checkToken() {
