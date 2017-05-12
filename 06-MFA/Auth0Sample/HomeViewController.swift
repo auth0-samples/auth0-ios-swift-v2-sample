@@ -21,42 +21,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-import Lock
+import UIKit
 import Auth0
 
 class HomeViewController: UIViewController {
-
+    
     // MARK: - IBAction
-
     @IBAction func showLoginController(_ sender: UIButton) {
-        Lock
-            .classic()
-            .onAuth { credentials in
-                guard let accessToken = credentials.accessToken else { return }
-                SessionManager.shared.storeToken(accessToken)
-                SessionManager.shared.retrieveProfile { error in
-                    guard error == nil else {
-                        self.showMissingProfileAlert()
-                        return
-                    }
-                    DispatchQueue.main.async {
-                        self.performSegue(withIdentifier: "ShowProfile", sender: nil)
-                    }
+        Auth0
+            .webAuth()
+            .start {
+                switch $0 {
+                case .failure(let error):
+                    print("Error: \(error)")
+                case .success(let credentials):
+                    guard let accessToken = credentials.accessToken else { return }
+                    self.showSuccessAlert(accessToken)
                 }
-
-            }
-            .onError { error in
-                print(error)
-            }
-            .present(from: self)
+        }
     }
-
+    
     // MARK: - Private
-
-    fileprivate var retrievedProfile: Profile!
-
-    fileprivate func showMissingProfileAlert() {
-        let alert = UIAlertController(title: "Error", message: "Could not retrieve profile", preferredStyle: .alert)
+    fileprivate func showSuccessAlert(_ accessToken: String) {
+        let alert = UIAlertController(title: "Success", message: "accessToken: \(accessToken)", preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default, handler: nil))
         self.present(alert, animated: true, completion: nil)
     }
