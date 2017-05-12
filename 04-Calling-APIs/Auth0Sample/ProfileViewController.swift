@@ -22,7 +22,6 @@
 // THE SOFTWARE.
 
 import UIKit
-import Lock
 import Auth0
 import SimpleKeychain
 
@@ -66,7 +65,7 @@ class ProfileViewController: UIViewController {
         var request = URLRequest(url: url)
         // Configure your request here (method, body, etc)
         if shouldAuthenticate {
-            guard let token = A0SimpleKeychain(service: "Auth0").string(forKey: "idToken") else {
+            guard let token = A0SimpleKeychain(service: "Auth0").string(forKey: "access_token") else {
                 return
             }
             request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -74,7 +73,7 @@ class ProfileViewController: UIViewController {
         let task = URLSession.shared.dataTask(with: request, completionHandler: { data, response, error in
             DispatchQueue.main.async {
                 let title = "Results"
-                let message = "Error: \(error?.localizedDescription)\n\nData: \(data == nil ? "nil" : "(there is data)")\n\nResponse: \(response?.description)"
+                let message = "Error: \(String(describing: error?.localizedDescription))\n\nData: \(data == nil ? "nil" : "(there is data)")\n\nResponse: \(String(describing: response?.description))"
                 let alert = UIAlertController.alertWithTitle(title, message: message, includeDoneButton: true)
                 self.present(alert, animated: true, completion: nil)
 

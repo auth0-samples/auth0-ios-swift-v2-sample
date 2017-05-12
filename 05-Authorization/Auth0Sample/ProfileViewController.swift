@@ -22,7 +22,6 @@
 // THE SOFTWARE.
 
 import UIKit
-import Lock
 import Auth0
 import SimpleKeychain
 

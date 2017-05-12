@@ -1,6 +1,6 @@
 # Auth0.swift
 
-[![CI Status](http://img.shields.io/travis/auth0/Auth0.swift.svg?style=flat-square)](https://travis-ci.org/auth0/Auth0.swift)
+[![CircleCI](https://img.shields.io/circleci/project/github/auth0/Auth0.swift.svg?style=flat-square)](https://circleci.com/gh/auth0/Auth0.swift/tree/master)
 [![Coverage Status](https://img.shields.io/codecov/c/github/auth0/Auth0.swift/master.svg?style=flat-square)](https://codecov.io/github/auth0/Auth0.swift)
 [![Version](https://img.shields.io/cocoapods/v/Auth0.svg?style=flat-square)](http://cocoadocs.org/docsets/Auth0)
 [![License](https://img.shields.io/cocoapods/l/Auth0.svg?style=flat-square)](http://cocoadocs.org/docsets/Auth0)
@@ -26,7 +26,7 @@ Auth0.swift is available through [CocoaPods](http://cocoapods.org).
 To install it, simply add the following line to your Podfile:
 
 ```ruby
-pod "Auth0", '~> 1.2'
+pod "Auth0", '~> 1.5'
 ```
 
 ###Carthage
@@ -34,7 +34,7 @@ pod "Auth0", '~> 1.2'
 In your Cartfile add this line
 
 ```
-github "auth0/Auth0.swift" ~> 1.2
+github "auth0/Auth0.swift" ~> 1.5
 ```
 
 ## Usage

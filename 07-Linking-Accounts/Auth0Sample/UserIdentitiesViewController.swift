@@ -22,7 +22,6 @@
 // THE SOFTWARE.
 
 import UIKit
-import Lock
 import Auth0
 
 class UserIdentitiesViewController: UIViewController {
@@ -52,21 +51,24 @@ class UserIdentitiesViewController: UIViewController {
     fileprivate var identities: [Identity]!
 
     fileprivate func showLinkAccountDialog() {
-        Lock
-            .classic()
-            .withOptions {
-                $0.closable = true
-            }
-            .onAuth { credentials in
-                DispatchQueue.main.async {
-                    guard let idToken = credentials.idToken else {
-                        self.showMissingProfileOrTokenAlert()
-                        return
+        Auth0
+            .webAuth()
+            .scope("openid profile")
+            .start {
+                switch $0 {
+                case .failure(let error):
+                    // Handle the error
+                    print("Error: \(error)")
+                case .success(let credentials):
+                    DispatchQueue.main.async {
+                        guard let idToken = credentials.idToken else {
+                            self.showMissingProfileOrTokenAlert()
+                            return
+                        }
+                        self.linkAccountWithIDToken(idToken)
                     }
-                    self.linkAccountWithIDToken(idToken)
                 }
-            }
-            .present(from: self)
+        }
     }
 
     fileprivate func showMissingProfileOrTokenAlert() {

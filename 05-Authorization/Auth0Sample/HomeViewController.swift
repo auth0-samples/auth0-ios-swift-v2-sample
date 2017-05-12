@@ -22,7 +22,6 @@
 // THE SOFTWARE.
 
 import UIKit
-import Lock
 import Auth0
 import SimpleKeychain
 
@@ -43,22 +42,27 @@ class HomeViewController: UIViewController {
     // MARK: - Private
 
     fileprivate func showLock() {
-        Lock
-            .classic()
-            .onAuth { credentials in
-                guard let accessToken = credentials.accessToken, let idToken = credentials.idToken else { return }
-                SessionManager.shared.storeTokens(accessToken, idToken: idToken)
-                SessionManager.shared.retrieveProfile { error in
-                    guard error == nil else {
-                        return self.showLock()
-                    }
-                    DispatchQueue.main.async {
-                        self.performSegue(withIdentifier: "ShowProfileNonAnimated", sender: nil)
+        Auth0
+            .webAuth()
+            .scope("openid profile")
+            .start {
+                switch $0 {
+                case .failure(let error):
+                    // Handle the error
+                    print("Error: \(error)")
+                case .success(let credentials):
+                    guard let accessToken = credentials.accessToken, let idToken = credentials.idToken else { return }
+                    SessionManager.shared.storeTokens(accessToken, idToken: idToken)
+                    SessionManager.shared.retrieveProfile { error in
+                        guard error == nil else {
+                            return self.showLock()
+                        }
+                        DispatchQueue.main.async {
+                            self.performSegue(withIdentifier: "ShowProfileNonAnimated", sender: nil)
+                        }
                     }
                 }
-
-            }
-            .present(from: self)
+        }
     }
 
     fileprivate func checkAccessToken() {

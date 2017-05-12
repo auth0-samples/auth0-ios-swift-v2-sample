@@ -1,3 +1,5 @@
 # auth0-ios-swift-v2-sample
 
-Auth0 iOS Lock.swift examples
+Source code samples for:
+
+- [iOS Swift QuickStart](https://auth0.com/docs/quickstart/native/ios-swift)

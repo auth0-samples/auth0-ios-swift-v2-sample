@@ -22,7 +22,7 @@
 // THE SOFTWARE.
 
 import UIKit
-import Lock
+import Auth0
 
 class HomeViewController: UIViewController {
 
@@ -41,23 +41,27 @@ class HomeViewController: UIViewController {
     // MARK: - Private
 
     private func showLock() {
-        Lock
-            .classic()
-            .onAuth { credentials in
-                guard let accessToken = credentials.accessToken, let idToken = credentials.idToken else { return }
-                SessionManager.shared.storeTokens(accessToken, idToken: idToken)
-                SessionManager.shared.retrieveProfile { error in
-                    DispatchQueue.main.async {
-                        guard error == nil else {
-                            return self.showLock()
+        Auth0
+            .webAuth()
+            .scope("openid profile")
+            .start {
+                switch $0 {
+                case .failure(let error):
+                    // Handle the error
+                    print("Error: \(error)")
+                case .success(let credentials):
+                    guard let accessToken = credentials.accessToken, let idToken = credentials.idToken else { return }
+                    SessionManager.shared.storeTokens(accessToken, idToken: idToken)
+                    SessionManager.shared.retrieveProfile { error in
+                        DispatchQueue.main.async {
+                            guard error == nil else {
+                                return self.showLock()
+                            }
+                            self.performSegue(withIdentifier: "ShowProfileNonAnimated", sender: nil)
                         }
-
-                        self.performSegue(withIdentifier: "ShowProfileNonAnimated", sender: nil)
                     }
                 }
-
-            }
-            .present(from: self)
+        }
     }
 
     private func checkAccessToken() {
