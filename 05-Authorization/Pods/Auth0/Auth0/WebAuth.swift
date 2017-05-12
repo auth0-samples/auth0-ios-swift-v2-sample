@@ -118,6 +118,15 @@ public protocol WebAuth: Trackable, Loggable {
     func scope(_ scope: String) -> Self
 
     /**
+      Provider scopes for oauth2/social connections. e.g. Facebook, Google etc
+
+     - parameter connectionScope: oauth2/social comma separated scope list: `user_friends,email`
+
+     - returns: the same WebAuth instance to allow method chaining
+     */
+    func connectionScope(_ connectionScope: String) -> Self
+
+    /**
      State value that will be echoed after authentication
      in order to check that the response is from your request and not other.
 
@@ -190,5 +199,5 @@ public protocol WebAuth: Trackable, Loggable {
 
      - parameter callback: callback called with the result of the WebAuth flow
      */
-    func start(_ callback: @escaping (Result<Credentials>) -> ())
+    func start(_ callback: @escaping (Result<Credentials>) -> Void)
 }

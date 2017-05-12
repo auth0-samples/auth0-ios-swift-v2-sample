@@ -25,7 +25,7 @@ import SafariServices
 
 class SafariSession: NSObject, AuthTransaction {
 
-    typealias FinishSession = (Result<Credentials>) -> ()
+    typealias FinishSession = (Result<Credentials>) -> Void
 
     weak var controller: UIViewController?
 
@@ -55,7 +55,7 @@ class SafariSession: NSObject, AuthTransaction {
      - returns: `true` if the url completed (successfuly or not) this session, `false` otherwise
      */
     func resume(_ url: URL, options: [UIApplicationOpenURLOptionsKey: Any] = [:]) -> Bool {
-        self.logger?.trace(url: url, source: "iOS Safari") // FIXME: better source name
+        self.logger?.trace(url: url, source: "iOS Safari")
         guard url.absoluteString.lowercased().hasPrefix(self.redirectURL.absoluteString.lowercased()) else { return false }
 
         guard
@@ -66,7 +66,7 @@ class SafariSession: NSObject, AuthTransaction {
             }
         var items = self.handler.values(fromComponents: components)
         guard has(state: self.state, inItems: items) else { return false }
-        if let _ = items["error"] {
+        if items["error"] != nil {
             self.finish(.failure(error: AuthenticationError(info: items, statusCode: 0)))
         } else {
             self.handler.credentials(from: items, callback: self.finish)

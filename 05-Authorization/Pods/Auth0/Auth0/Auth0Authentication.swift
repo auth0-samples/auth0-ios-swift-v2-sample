@@ -105,7 +105,7 @@ struct Auth0Authentication: Authentication {
             "send": type.rawValue,
             "client_id": self.clientId
             ]
-        if case .WebLink = type , !parameters.isEmpty {
+        if case .WebLink = type, !parameters.isEmpty {
             payload["authParams"] = parameters
         }
 
@@ -165,12 +165,13 @@ struct Auth0Authentication: Authentication {
             ])
     }
 
-    func renew(withRefreshToken refreshToken: String) -> Request<Credentials, AuthenticationError> {
-        let payload: [String: Any] = [
+    func renew(withRefreshToken refreshToken: String, scope: String? = nil) -> Request<Credentials, AuthenticationError> {
+        var payload: [String: Any] = [
             "refresh_token": refreshToken,
             "grant_type": "refresh_token",
             "client_id": self.clientId
         ]
+        payload["scope"] = scope
         let oauthToken = URL(string: "/oauth/token", relativeTo: self.url)!
         return Request(session: session, url: oauthToken, method: "POST", handle: authenticationObject, payload: payload, logger: self.logger, telemetry: self.telemetry)
     }
@@ -184,4 +185,13 @@ struct Auth0Authentication: Authentication {
         let delegation = URL(string: "/delegation", relativeTo: self.url)!
         return Request(session: session, url: delegation, method: "POST", handle: plainJson, payload: payload, logger: self.logger, telemetry: self.telemetry)
     }
+
+#if os(iOS)
+    func webAuth(withConnection connection: String) -> WebAuth {
+        var safari = SafariWebAuth(clientId: self.clientId, url: self.url, presenter: ControllerModalPresenter(), telemetry: self.telemetry)
+        return safari
+            .logging(enabled: self.logger != nil)
+            .connection(connection)
+    }
+#endif
 }
