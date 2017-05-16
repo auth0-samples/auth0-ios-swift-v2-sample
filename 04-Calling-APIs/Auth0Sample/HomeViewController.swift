@@ -41,7 +41,7 @@ class HomeViewController: UIViewController {
 
     // MARK: - Private
 
-    fileprivate func showLock() {
+    fileprivate func showLogin() {
         Auth0
             .webAuth()
             .scope("openid profile")
@@ -55,7 +55,7 @@ class HomeViewController: UIViewController {
                     SessionManager.shared.storeTokens(accessToken, idToken: idToken)
                     SessionManager.shared.retrieveProfile { error in
                         guard error == nil else {
-                            return self.showLock()
+                            return self.showLogin()
                         }
                         DispatchQueue.main.async {
                             self.performSegue(withIdentifier: "ShowProfileNonAnimated", sender: nil)
@@ -72,7 +72,7 @@ class HomeViewController: UIViewController {
         SessionManager.shared.retrieveProfile { error in
             loadingAlert.dismiss(animated: true) {
                 guard error == nil else {
-                    return self.showLock()
+                    return self.showLogin()
                 }
                 self.performSegue(withIdentifier: "ShowProfileNonAnimated", sender: nil)
             }

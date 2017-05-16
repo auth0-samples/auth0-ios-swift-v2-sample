@@ -41,7 +41,7 @@ class HomeViewController: UIViewController {
 
     // MARK: - Private
 
-    fileprivate func showLock() {
+    fileprivate func showLogin() {
         Auth0
             .webAuth()
             .scope("openid profile offline_access")
@@ -69,7 +69,7 @@ class HomeViewController: UIViewController {
             DispatchQueue.main.async {
                 loadingAlert.dismiss(animated: true) {
                     guard error == nil else {
-                        return self.showLock()
+                        return self.showLogin()
                     }
                     self.performSegue(withIdentifier: "ShowProfileNonAnimated", sender: nil)
                 }
